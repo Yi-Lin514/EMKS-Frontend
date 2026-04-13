@@ -1,0 +1,75 @@
+/* ==================== 全域 CSS 變數 ==================== */
+:root {
+  /* 灰階色票 */
+  --primary-900: #0f172a;
+  --primary-800: #1e293b;
+  --primary-700: #334155;
+  --primary-600: #475569;
+  --primary-500: #64748b;
+  --primary-400: #94a3b8;
+  --primary-300: #cbd5e1;
+  --primary-200: #e2e8f0;
+  --primary-100: #f1f5f9;
+  --primary-50: #f8fafc;
+
+  /* 強調色 */
+  --accent-600: #2563eb;
+  --accent-500: #3b82f6;
+  --accent-400: #60a5fa;
+  --accent-100: #dbeafe;
+  --accent-50: #eff6ff;
+
+  /* 語意色 */
+  --success-500: #22c55e;
+  --success-100: #dcfce7;
+  --error-500: #ef4444;
+  --error-100: #fee2e2;
+  --warning-500: #f59e0b;
+  --warning-100: #fef3c7;
+
+  /* 字體 */
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Noto Sans TC', sans-serif;
+
+  /* 佈局 */
+  --sidebar-width: 260px;
+  --header-height: 64px;
+
+  /* 陰影 */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+
+  /* 圓角 */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* 過渡 */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.2s ease;
+}
+
+/* ==================== 全域 Reset ==================== */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  background-color: var(--primary-50);
+  color: var(--primary-800);
+  line-height: 1.6;
+  min-height: 100vh;
+}
