@@ -1,5 +1,15 @@
 <template>
   <div class="login-container">
+    <!-- 冷啟動 loading overlay — backend 還沒 seed 完之前蓋住整頁 -->
+    <div v-if="showOverlay && !isBackendReady" class="startup-overlay">
+      <div class="startup-content">
+        <div class="startup-spinner"></div>
+        <h3 class="startup-title">系統啟動中</h3>
+        <p class="startup-message">首次開啟需 30–120 秒初始化知識庫</p>
+        <p class="startup-submessage">（系統閒置一段時間後的首次訪問會觸發）</p>
+      </div>
+    </div>
+
     <!-- 左側面板：品牌介紹 -->
     <div class="brand-panel">
       <div class="brand-content">
@@ -143,7 +153,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/utils/axios'
@@ -157,6 +167,41 @@ const password = ref('')
 const rememberMe = ref(false)
 const showPassword = ref(false)
 const errorMessage = ref('')
+
+// 冷啟動 readiness 檢查
+const isBackendReady = ref(false)
+const showOverlay = ref(false)
+let pollTimer = null
+let overlayDelayTimer = null
+
+const checkReady = async () => {
+  try {
+    const res = await api.get('/health/ready', { skipLoading: true, timeout: 3000 })
+    if (res.ready) {
+      isBackendReady.value = true
+      if (pollTimer) {
+        clearInterval(pollTimer)
+        pollTimer = null
+      }
+    }
+  } catch {
+    // network / timeout error 都當作還沒 ready，繼續輪詢
+  }
+}
+
+onMounted(() => {
+  checkReady()
+  pollTimer = setInterval(checkReady, 3000)
+  // 500ms 後仍未 ready 才顯示 overlay（warm backend 不閃）
+  overlayDelayTimer = setTimeout(() => {
+    if (!isBackendReady.value) showOverlay.value = true
+  }, 500)
+})
+
+onBeforeUnmount(() => {
+  if (pollTimer) clearInterval(pollTimer)
+  if (overlayDelayTimer) clearTimeout(overlayDelayTimer)
+})
 
 // 每個欄位各自的錯誤訊息（空字串 = 沒有錯誤）
 const errors = reactive({
@@ -257,6 +302,60 @@ const handleLogin = async () => {
 .login-container {
   display: flex;
   min-height: 100vh;
+}
+
+/* ==================== 冷啟動 Loading Overlay ==================== */
+.startup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.startup-content {
+  text-align: center;
+  max-width: 420px;
+  padding: 2rem;
+}
+
+.startup-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--primary-200);
+  border-top-color: var(--accent-500);
+  border-radius: 50%;
+  margin: 0 auto 1.5rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.startup-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--primary-900);
+  margin-bottom: 0.5rem;
+}
+
+.startup-message {
+  font-size: 0.9375rem;
+  color: var(--primary-600);
+  margin-bottom: 0.5rem;
+}
+
+.startup-submessage {
+  font-size: 0.8125rem;
+  color: var(--primary-400);
 }
 
 /* ==================== 左側面板 ==================== */
