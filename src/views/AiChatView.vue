@@ -170,6 +170,16 @@ const sendMessage = async () => {
       }),
     })
 
+    if (!response.ok) {
+      if (response.status === 429) {
+        const body = await response.json().catch(() => ({}))
+        aiMessage.content = body.detail || '請求過於頻繁，請稍後再試'
+      } else {
+        aiMessage.content = '抱歉，發生錯誤，請稍後再試。'
+      }
+      return
+    }
+
     const reader = response.body.getReader()
     const decoder = new TextDecoder()
     let buffer = ''
