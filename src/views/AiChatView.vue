@@ -54,10 +54,18 @@
                     <div v-else class="message-text" v-html="renderMarkdown(msg.content)"></div>
                     <div v-if="msg.sources && msg.sources.length" class="message-sources">
                       <div class="sources-label">參考來源</div>
-                      <div v-for="(src, sIdx) in filterSources(msg.sources)" :key="sIdx" class="source-item">
+                      <div
+                        v-for="(src, sIdx) in filterSources(msg.sources)"
+                        :key="sIdx"
+                        class="source-item"
+                        :class="{ 'source-item-clickable': src.current_version_id }"
+                        :title="src.current_version_id ? '點擊下載' : ''"
+                        @click="src.current_version_id && downloadSource(src)"
+                      >
                         <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>
                         {{ src.document_title }}
                         <span class="source-score">{{ (src.relevance_score * 100).toFixed(0) }}%</span>
+                        <svg v-if="src.current_version_id" class="source-download-icon" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
                       </div>
                     </div>
                   </div>
@@ -278,6 +286,26 @@ const filterSources = (sources) => {
   if (!sources || !sources.length) return []
   const maxScore = Math.max(...sources.map(s => s.relevance_score))
   return sources.filter(s => s.relevance_score >= maxScore - 0.15)
+}
+
+const downloadSource = async (src) => {
+  if (!src.current_version_id) return
+  try {
+    const res = await api.get(
+      `/knowledge/documents/${src.document_id}/versions/${src.current_version_id}/download`,
+      { responseType: 'blob', skipLoading: true, transformResponse: [(data) => data] }
+    )
+    const url = window.URL.createObjectURL(new Blob([res]))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = src.document_title
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    window.URL.revokeObjectURL(url)
+  } catch (e) {
+    console.error('下載失敗', e)
+  }
 }
 
 onMounted(() => {
@@ -572,6 +600,15 @@ const renderMarkdown = (text) => {
   margin-bottom: 0.375rem;
   font-size: 0.8125rem;
   color: var(--primary-700);
+  transition: background 0.15s;
+}
+
+.source-item-clickable {
+  cursor: pointer;
+}
+
+.source-item-clickable:hover {
+  background: var(--primary-100);
 }
 
 .source-item svg {
@@ -585,6 +622,14 @@ const renderMarkdown = (text) => {
   margin-left: auto;
   font-size: 0.75rem;
   color: var(--primary-400);
+}
+
+.source-download-icon {
+  opacity: 0.6;
+}
+
+.source-item-clickable:hover .source-download-icon {
+  opacity: 1;
 }
 
 .message-actions {
