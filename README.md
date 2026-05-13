@@ -4,6 +4,8 @@ EMKS 的 Vue 3 SPA 前端。系統整體介紹、架構圖、技術決策見 [EM
 
 **Live Demo**: https://emks-frontend.vercel.app
 
+**Demo 影片**: 🎥 [完整功能展示播放清單](https://www.youtube.com/watch?v=XIMqSGli-tI&list=PLE0JJfyjW48fgTjk15cM5wljBlXIY8-ys)
+
 ---
 
 ## 技術棧
